@@ -1,0 +1,8 @@
+name = "ReferenceRevision"
+uuid = "1053fb32-4acc-43b8-9452-68b47d229da6"
+authors = ["Gunnar Farnebäck <gunnar.farneback@contextvision.se>"]
+version = "0.1.0"
+
+[deps]
+Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+Tar = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
