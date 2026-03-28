@@ -24,7 +24,7 @@ function process_message(method)
         success, object, _ = deserialize(stdin)
         success || return internal_error("failed to deserialize object.")
         try
-            result = getproperty(object, field)
+            result = invokelatest(getproperty, object, field)
         catch e
             showerror(stderr, e)
         end
@@ -48,8 +48,8 @@ end
 
 function process(args)
     Pkg.activate(args[1], io = devnull)
-    Pkg.instantiate()
-    output = open(Base.OS_HANDLE(3))
+    Pkg.instantiate(io = devnull)
+    output = open(RawFD(3))
     data = UInt8[]
     while !eof(stdin)
         _, method, _ = deserialize(stdin)
