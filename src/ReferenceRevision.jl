@@ -53,6 +53,7 @@ function receive_reply(object::Object)
     end
 end
 
+# Dot indexing.
 function Base.getproperty(object::Object, name::Symbol)
     send(object, :getproperty)
     send(object, name)
