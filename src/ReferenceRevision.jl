@@ -305,7 +305,8 @@ function resolve_environment(path, rev, subdir, name, quiet, git)
         isnothing(git) && (git = "git")
         if init
             quiet || @info "Checking out revision $(rev) to $(path)."
-            Tar.extract(`$(git) -C $(current_env) archive $(rev)`, path)
+            root_dir = readchomp(`$(git) -C $(current_env) rev-parse --show-toplevel`)
+            Tar.extract(`$(git) -C $(root_dir) archive $(rev)`, path)
         end
         if isnothing(subdir)
             subdir = readchomp(`$(git) -C $(current_env) rev-parse --show-prefix`)

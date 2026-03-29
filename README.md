@@ -56,7 +56,7 @@ Data is transferred to and from the subprocess using the
 
 * The spawned process must run the same Julia version.
 
-* Only objects that can be losslessly serialized can be used. This
+* Only objects which can be losslessly serialized can be used. This
   excludes objects containing e.g. pointers or file descriptors.
 
 * Variables with types that exist in the main process but not in the
