@@ -48,3 +48,33 @@ revisions, e.g.
 ```
 tag = open_process(rev = "v2.3", use = :Mogrify)
 ```
+
+## Limitations
+
+Data is transferred to and from the subprocess using the
+`Serialization` standard library. As a consequence of this:
+
+* The spawned process must run the same Julia version.
+
+* Only objects that can be losslessly serialized can be used. This
+  excludes objects containing e.g. pointers or file descriptors.
+
+* Variables with types that exist in the main process but not in the
+  subprocess cannot be used.
+
+* Variables with types that exist in the subprocess but not in the
+  main process *can* be used if they originate from the subprocess,
+  but will be shown as unknown objects in the main process.
+
+* Variables with types that have different definitions in the main
+  process and in the subprocess have similar restrictions.
+
+## Public API
+
+`ReferenceRevision` exports a single function `open_process`. This is
+the entirety of the public API.
+
+## Development Status
+
+This package is in an alpha phase. Documented functionality may not be
+implemented. Implemented functionality may not work and not be tested.
