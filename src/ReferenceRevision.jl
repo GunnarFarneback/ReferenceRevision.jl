@@ -172,13 +172,13 @@ identifier which is colored green for `stdout` and `red` for stderr.
   if that is omitted, to `"process"`. `name` is also used in the
   `show` function for subprocess objects in the main process.
 
-* `redirect_stdout`: If provided, do not relay `stdout` but instead
-  send it to a filename or an IO stream. The `devnull` stream can be
-  used to discard the output.
+* `stdout`: If provided, do not relay `stdout` but instead send it to
+  a filename or an IO stream. The `devnull` stream can be used to
+  discard the output.
 
-* `redirect_stderr`: If provided, do not relay `stderr` but instead
-  send it to a filename or an IO stream. The `devnull` stream can be
-  used to discard the output.
+* `stderr`: If provided, do not relay `stderr` but instead send it to
+  a filename or an IO stream. The `devnull` stream can be used to
+  discard the output.
 
 **Other keyword arguments:**
 
@@ -206,16 +206,16 @@ function open_process(; path::Union{AbstractString, Nothing} = nothing,
                                  Vector{<:Union{Symbol, AbstractString}},
                                  Nothing} = nothing,
                       name::Union{AbstractString, Nothing} = nothing,
-                      redirect_stdout::Union{AbstractString, IO, Nothing} = nothing,
-                      redirect_stderr::Union{AbstractString, IO, Nothing} = nothing,
+                      stdout::Union{AbstractString, IO, Nothing} = nothing,
+                      stderr::Union{AbstractString, IO, Nothing} = nothing,
                       quiet::Bool = false,
                       git::Union{AbstractString, Cmd, Nothing} = nothing)
     env, name, temp_dir = resolve_environment(path, rev, subdir,
                                               name, quiet, git)
     objects_to_close = Any[]
     stdin′ = Pipe()
-    stdout′ = redirect_stdio(redirect_stdout, objects_to_close)
-    stderr′ = redirect_stdio(redirect_stderr, objects_to_close)
+    stdout′ = redirect_stdio(stdout, objects_to_close)
+    stderr′ = redirect_stdio(stderr, objects_to_close)
     fd3 = Pipe()
     Base.link_pipe!(fd3, reader_supports_async=true)
     process_script = joinpath(@__DIR__, "process.jl")
@@ -223,9 +223,17 @@ function open_process(; path::Union{AbstractString, Nothing} = nothing,
                                stdin = stdin′, stdout = stdout′,
                                stderr = stderr′), 3 => fd3),
             wait = false)
-    print_lock = ReentrantLock()
-    Threads.@spawn relay_stdio(stdout, stdout′, name, :green, print_lock)
-    Threads.@spawn relay_stdio(stderr, stderr′, name, :red, print_lock)
+    if isnothing(stdout) || isnothing(stderr)
+        print_lock = ReentrantLock()
+        if isnothing(stdout)
+            Threads.@spawn relay_stdio(Base.stdout, stdout′, name,
+                                       :green, print_lock)
+        end
+        if isnothing(stderr)
+            Threads.@spawn relay_stdio(Base.stderr, stderr′, name,
+                                       :red, print_lock)
+        end
+    end
     process = Process(stdin′, fd3, objects_to_close, p, name, temp_dir)
     object = Object(process, _serialize(Main), "module: Main")
     if isnothing(use) || use == true
