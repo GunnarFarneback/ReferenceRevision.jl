@@ -49,6 +49,11 @@ revisions, e.g.
 tag = open_process(rev = "v2.3", use = :Mogrify)
 ```
 
+## Reference Documentation
+
+See the [docstring](docstring.md). This is also available from the
+online help in the Julia REPL.
+
 ## Limitations
 
 Data is transferred to and from the subprocess using the
