@@ -60,10 +60,38 @@ function receive_reply(object::Object)
     end
 end
 
-# Dot indexing of remote object.
+# Dot indexing of remote object. It's questionable whether
+# `setproperty!` can actually be used meaningfully due to
+# serialization/deserialization creating new objects.
 function Base.getproperty(object::Object, name::Symbol)
     send(object, :getproperty)
     send(object, name)
+    send_raw(object, get_data(object))
+    return receive_reply(object)
+end
+
+function Base.setproperty!(object::Object, name::Symbol, value)
+    send(object, :setproperty!)
+    send(object, name)
+    send(object, value)
+    send_raw(object, get_data(object))
+    return receive_reply(object)
+end
+
+# Bracket indexing of remote object. It's questionable whether
+# `setindex!` can actually be used meaningfully due to
+# serialization/deserialization creating new objects.
+function Base.getindex(object::Object, index...)
+    send(object, :getindex)
+    send(object, index)
+    send_raw(object, get_data(object))
+    return receive_reply(object)
+end
+
+function Base.setindex!(object::Object, value, index...)
+    send(object, :setindex!)
+    send(object, index)
+    send(object, value)
     send_raw(object, get_data(object))
     return receive_reply(object)
 end

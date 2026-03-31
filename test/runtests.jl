@@ -129,6 +129,29 @@ end
             close(ref)
         end
 
+        # Test getproperty, getindex.
+        #
+        # Comment: It would be nice to also test setproperty! and
+        # setindex! but it's not so easy to do. The serialization and
+        # deserialization causes new objects to be created and
+        # updated, instead of updating existing objects in place.
+        ref = open_process(rev = "commit1", quiet = true)
+        @test ref.TestPackage.s.x == 1
+        @test ref.TestPackage.r[].x == 2
+
+        # Well, if we can't setproperty! or setindex!, let's change
+        # those values in the hard way, for reference. It's obviously
+        # better if the update functions are already available in the
+        # referenced code, but this shows that it's at least possible
+        # to do it this way.
+        ref.TestPackage.eval(:(update_s(x) = (s.x = x)))
+        ref.TestPackage.eval(:(update_r(x) = (r[].x = x)))
+        ref.TestPackage.update_s(3)
+        ref.TestPackage.update_r(4)
+        @test ref.TestPackage.s.x == 3
+        @test ref.TestPackage.r[].x == 4
+        close(ref)
+
         # Test automatic subdir when current environment is in a
         # subdirectory of the git clone.
         Pkg.activate(joinpath(dir, "benchmark"), io = devnull)

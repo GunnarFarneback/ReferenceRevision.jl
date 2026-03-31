@@ -28,11 +28,45 @@ function process_message(method)
         catch e
             showerror(stderr, e)
         end
+    elseif method == :setproperty!
+        success, field, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize field name.")
+        success, value, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize value.")
+        success, object, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize object.")
+        try
+            result = invokelatest(setproperty!, object, field, value)
+        catch e
+            showerror(stderr, e)
+        end
+    elseif method == :getindex
+        success, index, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize index name.")
+        success, object, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize object.")
+        try
+            result = invokelatest(getindex, object, index...)
+        catch e
+            showerror(stderr, e)
+        end
+    elseif method == :setindex!
+        success, index, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize index name.")
+        success, value, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize value.")
+        success, object, _ = deserialize(stdin)
+        success || return internal_error("failed to deserialize object.")
+        try
+            result = invokelatest(setindex!, object, value, index...)
+        catch e
+            showerror(stderr, e)
+        end
     elseif method == :call
         success, x, _ = deserialize(stdin)
         success || return internal_error("failed to deserialize arguments.")
         args, kwargs = x
-        success, object, _ = deserialize(stdin)
+        success, object, _ = invokelatest(deserialize, stdin)
         success || return internal_error("failed to deserialize object.")
         result = nothing
         try

@@ -17,6 +17,11 @@ function create_test_environment(dir)
                module TestPackage
                export f
                f(x) = x .+ 1
+               mutable struct M
+                   x::Int
+               end
+               const s = M(1)
+               const r = Ref(M(2))
                end
                """)
     run(`git -C $dir init`)
