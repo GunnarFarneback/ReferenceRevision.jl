@@ -77,18 +77,24 @@ function (object::Object)(args...; kwargs...)
 end
 
 # stdout and stderr on the remote side is relayed back to the main
-# session, prefixed with a color coded identifier.
+# session, prefixed with a color coded identifier. Output is only
+# flushed once a newline is received, and after end of file.
 function relay_stdio(io, pipe::Pipe, name, color, print_lock)
+    s = ""
     while !eof(pipe)
         x = readavailable(pipe)
-        last(x) == UInt8('\n') && pop!(x)
-        s = String(x)
+        s *= String(x)
         lock(print_lock)
-        for line in eachsplit(s, "\n")
+        while contains(s, "\n")
+            line, s = split(s, "\n", limit = 2)
             printstyled(io, name, ": "; color)
             println(io, line)
         end
         unlock(print_lock)
+    end
+    if !isempty(s)
+        printstyled(io, name, ": "; color)
+        println(io, s)
     end
 end
 
