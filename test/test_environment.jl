@@ -22,6 +22,7 @@ function create_test_environment(dir)
                end
                const s = M(1)
                const r = Ref(M(2))
+               g(a::M, b::Int; c::M, d::Int) = M((a.x + d) * (b + c.x))
                end
                """)
     run(`git -C $dir init`)
