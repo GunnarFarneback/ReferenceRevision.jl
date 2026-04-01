@@ -34,16 +34,22 @@ get_data(object::Object) = getfield(object, :data)
 get_description(object::Object) = getfield(object, :description)
 
 # Serialize a local object and send it to the remote side.
-function send(object::Object, x)
-    serialize(get_process(object).stdin, x)
+function send(io::IO, x)
+    serialize(io, x)
 end
 
 # Send an already serialized object to the remote side. The
 # serialization was originally made on the remote side.
-function send_raw(object::Object, x)
+function send(io::IO, x::Object)
+    wrapped_serialize(io, get_data(x))
+end
+
+function send(object::Object, values...)
     io = get_process(object).stdin
-    write(io, length(x))
-    write(io, x)
+    send(io, length(values))
+    for value in values
+        send(io, value)
+    end
 end
 
 # Receive the result of a remote operation.
@@ -64,17 +70,12 @@ end
 # `setproperty!` can actually be used meaningfully due to
 # serialization/deserialization creating new objects.
 function Base.getproperty(object::Object, name::Symbol)
-    send(object, :getproperty)
-    send(object, name)
-    send_raw(object, get_data(object))
+    send(object, :getproperty, object, name)
     return receive_reply(object)
 end
 
 function Base.setproperty!(object::Object, name::Symbol, value)
-    send(object, :setproperty!)
-    send(object, name)
-    send(object, value)
-    send_raw(object, get_data(object))
+    send(object, :setproperty!, object, name, value)
     return receive_reply(object)
 end
 
@@ -82,25 +83,22 @@ end
 # `setindex!` can actually be used meaningfully due to
 # serialization/deserialization creating new objects.
 function Base.getindex(object::Object, index...)
-    send(object, :getindex)
-    send(object, index)
-    send_raw(object, get_data(object))
+    send(object, :getindex, object, length(index), index...)
     return receive_reply(object)
 end
 
 function Base.setindex!(object::Object, value, index...)
-    send(object, :setindex!)
-    send(object, index)
-    send(object, value)
-    send_raw(object, get_data(object))
+    send(object, :setindex!, object, value, length(index), index...)
     return receive_reply(object)
 end
 
 # Remote function call.
 function (object::Object)(args...; kwargs...)
-    send(object, :call)
-    send(object, (args, kwargs))
-    send_raw(object, get_data(object))
+    # It would be easier to just send (args, kwargs) in one argument,
+    # but that wouldn't support sending back opaque values received
+    # from the subprocess.
+    send(object, :call, object, length(args), args...,
+         keys(kwargs), values(kwargs)...)
     return receive_reply(object)
 end
 
@@ -179,7 +177,7 @@ function open_process(; path::Union{AbstractString, Nothing} = nothing,
         end
     end
     process = Process(stdin′, fd3, objects_to_close, p, name, temp_dir)
-    object = Object(process, _serialize(Main), "module: Main")
+    object = Object(process, serialize(Main), "module: Main")
     if isnothing(use) || use == true
         use = find_package_environment(env)
     end

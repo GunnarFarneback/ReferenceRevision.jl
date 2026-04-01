@@ -78,6 +78,10 @@ end
         Pkg.activate(dir, io = devnull)
         # Standard usage, automatic using of the package in the
         # environment.
+        #
+        # Note: Because we eval the package into Main we need to
+        # sprinkle a lot of invokelatest. This would not be the case
+        # for normal use of ReferenceRevision.
         @eval import TestPackage
         ref = open_process(rev = "commit1", quiet = true)
         x = 1:10
@@ -150,6 +154,21 @@ end
         ref.TestPackage.update_r(4)
         @test ref.TestPackage.s.x == 3
         @test ref.TestPackage.r[].x == 4
+
+        # Test calling a function that only exists in the reference
+        # process with arguments of a type that only exists in the
+        # reference process.
+        ref.eval(:(using TestPackage: M, g))
+        a = ref.M(1)
+        @test a isa ReferenceRevision.Object
+        @test ReferenceRevision.get_description(a) == "object: unknown"
+        c = ref.M(2)
+        @test c isa ReferenceRevision.Object
+        @test ReferenceRevision.get_description(c) == "object: unknown"
+        e = ref.g(a, 3; c, d = 4)
+        @test e isa ReferenceRevision.Object
+        @test ReferenceRevision.get_description(e) == "object: unknown"
+        @test e.x == 25
         close(ref)
 
         # Test automatic subdir when current environment is in a
