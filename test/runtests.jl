@@ -179,5 +179,21 @@ end
                            instantiate = true)
         @test ref.BenchmarkTools isa ReferenceRevision.Object
         close(ref)
+
+        # Test fallback to current directory.
+        mktempdir() do tmpdir2
+            Pkg.activate(tmpdir2)
+            cd(dir) do
+                ref = open_process(rev = "commit1", quiet = true)
+                x = 1:10
+                @test ref.f(x) == 2:11
+                close(ref)
+            end
+            # Neither active project, nor current directory, inside
+            # git working tree.
+            cd(tmpdir2) do
+                @test_throws ErrorException ref = open_process(rev = "commit1", quiet = true)
+            end
+        end
     end
 end

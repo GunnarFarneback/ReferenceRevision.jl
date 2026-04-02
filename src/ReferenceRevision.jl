@@ -246,6 +246,13 @@ function resolve_environment(path, rev, subdir, name, quiet, git)
         isnothing(name) && (name = rev)
         current_env = dirname(Base.active_project())
         isnothing(git) && (git = "git")
+        if !inside_git_work_tree(current_env, git)
+            current_env = pwd()
+            if !inside_git_work_tree(current_env, git)
+                error("Neither the active environment, nor the current directory, is inside a git work tree.")
+            end
+        end
+
         if init
             quiet || @info "Checking out revision $(rev) to $(path)."
             root_dir = readchomp(`$(git) -C $(current_env) rev-parse --show-toplevel`)
@@ -257,6 +264,17 @@ function resolve_environment(path, rev, subdir, name, quiet, git)
         env = joinpath(path, subdir)
     end
     return env, name, temp_dir
+end
+
+inside_git_work_tree(path::Any, git) = false
+function inside_git_work_tree(path::AbstractString, git)
+    isdir(path) || return
+    cmd = `$(git) -C $(path) rev-parse --is-inside-work-tree`
+    # This is a bit messy because the git command finds it a good idea
+    # to write to stderr and return a non-success exit code, instead
+    # of simply printing false to stdout in the negative case.
+    return readchomp(pipeline(Cmd(cmd, ignorestatus = true),
+                              stderr = devnull)) == "true"
 end
 
 # Close down the remote process and communication channels. If a

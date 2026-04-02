@@ -36,8 +36,9 @@ If `rev` is not provided, ignore `subdir` and activate the environment
 in `path`. If `path` is also omitted, activate the current directory
 (which may be different from the environment of the current session).
 
-If `rev` is provided, the current environment must be within a git
-clone. `rev` may be any reference known to git, such as `HEAD`, a
+If `rev` is provided, either the current environment or the current
+directory must be inside a git work tree, where the former has
+priority. `rev` may be any reference known to git, such as `HEAD`, a
 branch name, a tag name, or a commit hash. If `path` is omitted, the
 `rev` revision will be extracted into a temporary directory, which
 will be automatically removed once the process is closed or the
