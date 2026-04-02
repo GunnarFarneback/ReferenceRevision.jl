@@ -144,6 +144,7 @@ docstring = last(split(docstring, "\n\n", limit = 2))
 function open_process(; path::Union{AbstractString, Nothing} = nothing,
                       rev::Union{AbstractString, Nothing} = nothing,
                       subdir::Union{AbstractString, Nothing} = nothing,
+                      instantiate::Bool = false,
                       use::Union{Bool, Symbol, AbstractString,
                                  Vector{<:Union{Symbol, AbstractString}},
                                  Nothing} = nothing,
@@ -161,7 +162,7 @@ function open_process(; path::Union{AbstractString, Nothing} = nothing,
     fd3 = Pipe()
     Base.link_pipe!(fd3, reader_supports_async=true)
     process_script = joinpath(@__DIR__, "process.jl")
-    p = run(_pipeline(pipeline(`$(Base.julia_cmd()) $(process_script) $env`,
+    p = run(_pipeline(pipeline(`$(Base.julia_cmd()) $(process_script) $env $instantiate`,
                                stdin = stdin′, stdout = stdout′,
                                stderr = stderr′), 3 => fd3),
             wait = false)

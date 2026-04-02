@@ -24,9 +24,13 @@ A subprocess can be exited and file descriptors reclaimed by calling
 
 ### Keyword arguments related to the environment
 
+These keywords determine what environment the subprocess should activate.
+
 * `path`: Path to the environment or to the extracted git revision.
 * `rev`: Git revision to extract.
 * `subdir`: Subdirectory to use for the environment.
+* `instantiate`: If `true`, run `Pkg.instantiate` after activating the
+  environment. Defaults to `false`.
 
 If `rev` is not provided, ignore `subdir` and activate the environment
 in `path`. If `path` is also omitted, activate the current directory

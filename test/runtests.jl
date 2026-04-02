@@ -100,7 +100,7 @@ end
 
         # Test subdir, which is a non-package environment.
         ref = open_process(rev = "commit3", subdir = "benchmark",
-                           quiet = true, stderr = devnull)
+                           quiet = true, stderr = devnull, instantiate = true)
         @test isnothing(ref.BenchmarkTools)
         ref.eval(:(import BenchmarkTools))
         @test ref.BenchmarkTools isa ReferenceRevision.Object
@@ -113,7 +113,7 @@ end
                     Union{Symbol, String}[:BenchmarkTools,
                                           "BenchmarkTools"]]
             ref = open_process(;rev = "commit3", subdir = "benchmark",
-                               quiet = true, use)
+                               quiet = true, use, instantiate = true)
             @test ref.BenchmarkTools isa ReferenceRevision.Object
             close(ref)
         end
@@ -175,7 +175,8 @@ end
         # subdirectory of the git clone.
         Pkg.activate(joinpath(dir, "benchmark"), io = devnull)
         ref = open_process(rev = "HEAD", quiet = true,
-                           stderr = devnull, use = :BenchmarkTools)
+                           stderr = devnull, use = :BenchmarkTools,
+                           instantiate = true)
         @test ref.BenchmarkTools isa ReferenceRevision.Object
         close(ref)
     end
