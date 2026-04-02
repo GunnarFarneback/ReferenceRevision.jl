@@ -121,7 +121,7 @@ end
 
 function process(args)
     Pkg.activate(args[1], io = devnull)
-    Pkg.instantiate(io = devnull)
+    args[2] == "true" && Pkg.instantiate(io = devnull)
     output = open(RawFD(3))
     data = UInt8[]
     while !eof(stdin)
