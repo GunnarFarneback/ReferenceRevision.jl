@@ -13,7 +13,7 @@ environment.
 
 ```
 using Pkg
-Pkg.add("https://github.com/GunnarFarneback/ReferenceRevision.jl.git")
+Pkg.add("ReferenceRevision")
 ```
 
 ## Example
@@ -28,13 +28,13 @@ you have to go back and forth repeatedly in a debugging session.
 With this package you can instead do
 ```
 using ReferenceRevision
-head = open_process(rev = "HEAD", use = :Mogrify)
+head = open_process(rev = "HEAD")
 out = mogrify(image)
 out_head = head.mogrify(image)
 ```
 
 The `open_process` call extracts the files from the `HEAD` revision to
-a temporary directory, starts a new Julia process in that enviroment
+a temporary directory, starts a new Julia process in that environment
 and runs `using Mogrify`. The `head.mogrify(image)` call transfers
 `image` to the `head` process, runs the `mogrify` function in that
 process, and transfers the result back to the main session.
@@ -46,7 +46,7 @@ e.g. `head.Mogrify.SubModule.some_function`.
 You can also start more processes if you need to compare with other
 revisions, e.g.
 ```
-tag = open_process(rev = "v2.3", use = :Mogrify)
+tag = open_process(rev = "v2.3")
 ```
 
 ## Tutorial
@@ -55,8 +55,8 @@ See the [tutorial](tutorial.md) page.
 
 ## Reference Documentation
 
-See the [docstring](docstring.md). This is also available from the
-online help in the Julia REPL.
+See the [docstring](docstring.md) for `open_process`. This is also
+available from the online help in the Julia REPL.
 
 ## Limitations
 
