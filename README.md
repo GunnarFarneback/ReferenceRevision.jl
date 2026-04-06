@@ -49,6 +49,10 @@ revisions, e.g.
 tag = open_process(rev = "v2.3", use = :Mogrify)
 ```
 
+## Tutorial
+
+See the [tutorial](tutorial.md) page.
+
 ## Reference Documentation
 
 See the [docstring](docstring.md). This is also available from the
