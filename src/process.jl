@@ -123,13 +123,12 @@ function process(args)
     Pkg.activate(args[1], io = devnull)
     args[2] == "true" && Pkg.instantiate(io = devnull)
     output = open(RawFD(3))
-    data = UInt8[]
     while !eof(stdin)
         _, num_values, _ = deserialize(stdin)
         _, method, _ = deserialize(stdin)
         method == :quit && break
         result = process_message(method, num_values - 1)
-        send_reply(output, result)
+        invokelatest(send_reply, output, result)
     end
     close(output)
 end
